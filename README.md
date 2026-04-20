@@ -55,8 +55,10 @@ Racine de scan Spring : `com.freshlink` (voir `FreshlinkApplication`).
 - `com.freshlink.app.config` — configuration transverse (`AppConfig` : properties, JPA, clock)
 - `com.freshlink.common` — utilitaires partagés (à venir)
 - `com.freshlink.auth` — authentification : `AuthProperties`, sous-packages `domain` (User, AuthService), `security` (JWT, filtre, config), `api` (controller + DTOs)
+- `com.freshlink.catalog` — référentiels partagés (`Allergen`, `Cuisine`, `IngredientFamily`, `Ingredient`, `Utensil`, `Tag`) réutilisables entre recettes et (plus tard) supermarchés
+- `com.freshlink.recipe` — agrégat recette : `domain` (Recipe + sous-entités : label embarqué, allergens, ingredients, nutritions, steps, yields), `api` (controller, DTOs, mapper, exception handler)
 
-Les modules métier (`recipe`, `importer`, `grocery`, etc.) seront ajoutés sous `com.freshlink` au fil des étapes du plan.
+Les modules métier restants (`importer`, `grocery`, etc.) seront ajoutés sous `com.freshlink` au fil des étapes du plan.
 
 ## Authentification
 
@@ -74,6 +76,17 @@ Variables d'environnement attendues (production) :
 | `GOOGLE_CLIENT_ID`         | `client_id` OAuth2 Google (audience attendue de l'`id_token`)|
 | `FRESHLINK_JWT_SECRET`     | Secret HMAC ≥ 32 octets pour signer le JWT applicatif        |
 | `FRESHLINK_ALLOWED_EMAILS` | Liste d'emails autorisés (séparés par virgule)               |
+
+## Recettes
+
+Modèle de données calqué sur les JSON HelloFresh (normalisation relationnelle, référentiels partagés dans `com.freshlink.catalog`). La migration `V3__recipe_and_catalog.sql` crée 19 tables couvrant : recette (scalaires, label embarqué, payload brut en `JSONB` pour la ré-importation), allergènes (avec `triggers_traces_of` / `traces_of` par recette), cuisines, tags (et leurs préférences), ingrédients (avec famille, allergènes liés et pays d'origine), ustensiles, étapes (avec ustensiles et images), valeurs nutritionnelles et rendements (`yields` : quantité + unité par ingrédient et par nombre de portions).
+
+Endpoints (JWT requis) :
+
+- `GET /api/recipes?page=0&size=20` — liste paginée résumée
+- `GET /api/recipes/{id}` — détail complet (toutes les relations)
+
+L'endpoint d'import depuis les fichiers JSON HelloFresh arrivera à l'étape 5.
 
 ## Documentation
 

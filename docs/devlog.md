@@ -151,3 +151,64 @@ Journal des étapes d’implémentation (référence : plan backend FreshLink).
 - Module `recipe` : entité + migration + endpoints CRUD `/api/recipes`.
 
 ---
+
+## 2026-04-20 — Étape 4 : Modèle de données Recipe & Catalog
+
+**Objectif** : capturer l'intégralité du JSON HelloFresh d'une recette (exemple « Croque rustique minute au poulet & pesto rosso ») dans un modèle relationnel normalisé, avec entités JPA idiomatiques et endpoints de lecture (`GET /api/recipes`, `GET /api/recipes/{id}`). L'import depuis les fichiers HelloFresh viendra à l'étape 5 ; ici, on pose la fondation.
+
+**Découpage en deux modules**
+
+- `com.freshlink.catalog` (référentiels partagés) : `Allergen`, `Cuisine`, `IngredientFamily`, `Ingredient`, `Utensil`, `Tag`. Ces entités sont réutilisables entre recettes (et serviront aussi pour la future intégration courses).
+- `com.freshlink.recipe` (agrégat) : `Recipe` (racine), `RecipeLabel` (`@Embeddable`), `RecipeAllergen`, `RecipeIngredient`, `RecipeNutrition`, `RecipeStep`, `RecipeStepImage`, `RecipeYield`, `RecipeYieldIngredient` + DTOs API, mapper, service, controller, exception handler. Même structure que le module `auth` (`domain/`, `api/`, `package-info` `@NullMarked`).
+
+**Migration `V3__recipe_and_catalog.sql`**
+
+- **Catalogue (9 tables)** : `allergens`, `cuisines`, `ingredient_families`, `ingredients` (+ FK `family_id`), `ingredient_allergens` (M:N), `ingredient_countries_of_origin` (liste ordonnée), `utensils`, `tags`, `tag_preferences` (liste ordonnée).
+- **Recette (10 tables)** : `recipes` (y compris `label_*` aplatis comme `@Embeddable`, `raw_source JSONB` pour garder le payload d'import), `recipe_allergens` (avec `triggers_traces_of`, `traces_of`), `recipe_cuisines` (M:N), `recipe_tags` (M:N), `recipe_ingredients` (PK (recipe_id, ingredient_id), `position` unique), `recipe_nutritions` (PK (recipe_id, nutrition_type)), `recipe_steps` (colonne renommée `step_index` car `index` est réservé SQL), `recipe_step_utensils` (M:N), `recipe_step_images`, `recipe_yields`, `recipe_yield_ingredients` (PK (yield_id, ingredient_id)).
+- Tous les identifiants sont des **UUID**. Chaque référentiel conserve l'`external_id` HelloFresh (unique) + éventuellement `external_uuid` pour retrouver les entités lors des ré-imports.
+- Cascades `ON DELETE CASCADE` vers les tables filles de `recipes` pour simplifier la ré-import (`recipes` → `recipe_allergens`, `recipe_ingredients`, `recipe_nutritions`, `recipe_steps` → `recipe_step_images`, `recipe_step_utensils`, `recipe_yields` → `recipe_yield_ingredients`).
+- Index `idx_recipes_slug` (unique) + `idx_recipes_published` (`is_published, active`).
+
+**Mapping JPA — points clés**
+
+- `RecipeLabel` en `@Embeddable` (colonnes `label_text`, `label_handle`, `label_foreground_color`, `label_background_color`, `label_display`).
+- Clés composées via `@EmbeddedId` + `@MapsId` pour `RecipeAllergen`, `RecipeIngredient`, `RecipeNutrition`, `RecipeYieldIngredient` (pattern Hibernate idiomatique pour tables d'association avec attributs).
+- `@ElementCollection` + `@OrderColumn` pour `ingredient_countries_of_origin` et `tag_preferences` (listes simples de strings, ordre préservé).
+- `@ManyToMany` + `@JoinTable` pour les associations pures sans colonne supplémentaire (`recipe_cuisines`, `recipe_tags`, `recipe_step_utensils`, `ingredient_allergens`).
+- `@OneToMany(cascade = ALL, orphanRemoval = true)` côté `Recipe` pour les collections filles — un `recipeRepository.save(recipe)` persiste l'ensemble du graphe.
+- **Attention** `MultipleBagFetchException` : Hibernate refuse d'hydrater plusieurs `List` dans une même requête. L'`@EntityGraph` exhaustif initialement prévu a été retiré ; on s'appuie sur le lazy loading à l'intérieur de la transaction du service (`RecipeService` est `@Transactional(readOnly = true)`, le mapper matérialise tout via `.toList()` avant que Jackson sérialise — `spring.jpa.open-in-view=false` reste actif).
+
+**API**
+
+- `GET /api/recipes?page=0&size=20` → `Page<RecipeResponse>` (id, externalId, name, slug, headline, difficulty, totalTimeMinutes, imageLink, label).
+- `GET /api/recipes/{id}` → `RecipeDetailResponse` complet (tous les champs scalaires + `cuisines`, `tags`, `allergens`, `ingredients` (avec famille, allergènes et pays d'origine), `nutritions`, `steps` (avec utensils + images), `yields` (avec ingredients + amount/unit par portion)).
+- Endpoints protégés par la chaîne Spring Security existante (JWT obligatoire, sinon 401 via `HttpStatusEntryPoint`).
+- `RecipeMapper` (utilitaire package-private) : conversion entités → DTOs, collections triées pour un rendu stable.
+- `RecipeExceptionHandler` : `RecipeNotFoundException` → 404.
+
+**Tests**
+
+- `RecipeApiIntegrationTest` (`@SpringBootTest` + `@AutoConfigureMockMvc` + Testcontainers Postgres + profil `test`) :
+  - Seed complet via `TransactionTemplate` : 2 allergènes, 1 cuisine, 1 tag, 1 ustensile, 1 famille + 2 ingrédients (le pain avec pays d'origine `UE`/`FR` + allergène blé), 1 recette avec label, 2 étapes (dont une avec image et une avec ustensile), 2 `yields` (2 et 4 personnes) avec amounts en `BigDecimal`.
+  - Émission d'un JWT applicatif via `JwtIssuer` pour l'appel authentifié.
+  - `GET /api/recipes` → 200 + page de 1 recette avec les champs résumés attendus.
+  - `GET /api/recipes/{id}` → 200 + graphe complet (cuisines, tags, allergens, ingredients, nutritions, steps, yields) vérifié au `JsonNode`.
+  - `GET /api/recipes/{unknownId}` → 404.
+  - `GET /api/recipes` sans `Authorization` → 401.
+
+**Vérifications**
+
+- `./gradlew spotlessApply build` → **BUILD SUCCESSFUL** ; 12 tests verts (4 nouveaux + 8 existants).
+
+**Décisions / notes**
+
+- On ne **mappe pas** `raw_source JSONB` côté JPA en étape 4 : la colonne existe dans la migration pour que l'étape 5 (import) y stocke le payload brut. Hibernate `ddl-auto=validate` ne se plaint pas des colonnes supplémentaires côté DB.
+- Clé composite `(recipe_id, ingredient_id)` choisie pour `recipe_ingredients` (plus naturelle côté JPA que `(recipe_id, position)` qui obligeait à saisir la position lors de la recherche).
+- `raw_source` JSONB permettra en étape 5 un import idempotent (réhydrater un nouvel enregistrement à partir du JSON original sans reconstruire).
+- `Context7 MCP` : `resolve-library-id` OK, `get-library-docs` indisponible — vérifications via connaissances Spring Data JPA / Hibernate 7 standard.
+
+**Suite prévue (étape 5)**
+
+- Import de recettes depuis fichiers JSON HelloFresh : endpoint `POST /api/recipes/import` (multipart ou body JSON) + service d'import upsert (dédup via `external_id`) + référentiels créés/mis à jour à la volée + stockage du payload brut dans `raw_source`.
+
+---
