@@ -78,3 +78,76 @@ Journal des étapes d’implémentation (référence : plan backend FreshLink).
 - Authentification OAuth2 Google + JWT applicatif + endpoint `/api/me` + whitelist d’emails autorisés.
 
 ---
+
+## 2026-04-20 — Étape 3 : Authentification Google + JWT applicatif
+
+**Objectif** : permettre à un client (futur front web/mobile) de s'authentifier via Google, filtrer les accès via une whitelist d'emails, émettre un JWT applicatif pour les appels suivants, et exposer `GET /api/me` protégé.
+
+**Choix validés**
+
+- **Flow OAuth2** : option A — le client obtient un **`id_token` Google** via Google Identity Services et l'envoie en `POST /api/auth/google`. Le backend vérifie la signature (JWKs Google) et l'audience via `google-api-client`, puis émet un JWT applicatif. Cohérent avec SPA/mobile, sans session serveur.
+- **Persistence** : **Spring Data JPA (Hibernate)** — plus adapté aux futures relations `Recipe → Ingredient`.
+- **JWT applicatif** : HS256, 24h d'expiration, pas de refresh token en V1.
+- **Whitelist** : liste d'emails dans `freshlink.auth.allowed-emails` (overridable via `FRESHLINK_ALLOWED_EMAILS`).
+
+**Dépendances ajoutées** (`build.gradle.kts`)
+
+- `spring-boot-starter-data-jpa` (remplace `starter-jdbc`)
+- `spring-boot-starter-security`
+- `spring-boot-starter-jackson` (explicite en Boot 4 — Jackson 3.x sous namespace `tools.jackson`)
+- `spring-boot-flyway` (auto-config Flyway désormais dans un module dédié en Boot 4)
+- `com.google.api-client:google-api-client:2.9.0` (vérification `id_token` Google)
+- `io.jsonwebtoken:jjwt-api:0.13.0` + `jjwt-impl` / `jjwt-jackson` en runtime
+
+**Modèle de données**
+
+- Migration `V2__users.sql` : table `freshlink.users` (id `UUID` PK, `google_sub` unique, `email` unique, `display_name`, `picture_url`, `created_at`, `updated_at`, index sur `email`).
+
+**Architecture du module `com.freshlink.auth`**
+
+- `AuthProperties` (record `@ConfigurationProperties` sur `freshlink.auth`) : `jwt.{issuer,expiration,secret}`, `google.client-id`, `allowedEmails`.
+- `domain.User` (entité JPA) + `UserRepository` (Spring Data JPA).
+- `domain.AuthService` — orchestration : vérifie `id_token`, applique la whitelist, upsert le `User`, émet le JWT.
+- `security.GoogleIdTokenVerifierService` — wrapper autour de `GoogleIdTokenVerifier` (audience = `google.client-id`), refuse les tokens avec `email_verified=false`.
+- `security.JwtIssuer` — émet un HS256 avec `iss`, `sub=user.id`, `iat`, `exp`, claim `email`. Valide que le secret fait ≥ 32 octets.
+- `security.JwtAuthenticator` — valide la signature, l'issuer, l'expiration ; utilise le même `Clock` que l'émetteur (nécessaire pour que les tests à horloge fixe fonctionnent : `Jwts.parser().clock(() -> Date.from(clock.instant()))`).
+- `security.JwtAuthenticationFilter` — extrait `Authorization: Bearer …`, pose un `AuthenticatedUser` (record `{id,email}`) comme principal.
+- `security.SecurityConfig` — filter chain stateless : `POST /api/auth/google`, `/actuator/health|info` publics ; tout le reste authentifié ; `HttpStatusEntryPoint(UNAUTHORIZED)` pour renvoyer 401 (défaut Spring Security : 403).
+- `api.AuthController` — `POST /api/auth/google` (→ `TokenResponse`), `GET /api/me` (→ `UserResponse`).
+- `api.AuthExceptionHandler` — 401/403/404 selon l'exception métier (`InvalidGoogleIdTokenException`, `EmailNotAllowedException`, `UnknownUserException`).
+
+**Configuration par défaut**
+
+- `application.properties` : bloc `freshlink.auth.*` lisant `FRESHLINK_JWT_SECRET`, `GOOGLE_CLIENT_ID`, `FRESHLINK_ALLOWED_EMAILS` depuis l'environnement (valeurs par défaut sûres pour dev local uniquement).
+- `application-test.properties` : secret de test, `freshlink-test` comme issuer, expiration 1h, email whitelist `julien.burlereaux@gmail.com`.
+- `AppConfig` : `@EnableConfigurationProperties(AuthProperties.class)`, `@EnableJpaRepositories("com.freshlink")`, `@EntityScan("com.freshlink")` (repositories et entités hors du package de `FreshlinkApplication`), bean `Clock systemClock()`.
+
+**Tests**
+
+- `JwtIssuerAndAuthenticatorTest` (unit) : round-trip OK, signature altérée → refus, expiration → refus (horloge avancée).
+- `AuthIntegrationTest` (`@SpringBootTest` + `@AutoConfigureMockMvc` + Testcontainers Postgres + `@MockitoBean GoogleIdTokenVerifierService`) :
+  - `POST /api/auth/google` (identité mockée) → 200 + `access_token` ; `GET /api/me` avec ce Bearer → 200 + profil ; l'utilisateur est bien persisté.
+  - Email hors whitelist → 403.
+  - `id_token` invalide → 401.
+  - `GET /api/me` sans Authorization → 401.
+
+**Pièges Spring Boot 4 rencontrés**
+
+- Les auto-configurations sont désormais éclatées en modules ; il faut déclarer explicitement :
+  - `spring-boot-starter-jackson` (sinon `ObjectMapper` absent — et Jackson passe à `tools.jackson.*`, plus `com.fasterxml.jackson.*`).
+  - `spring-boot-flyway` (sinon Flyway n'est pas pris en charge et Hibernate échoue la `validate` sur `freshlink.users`).
+- Les annotations ont bougé :
+  - `AutoConfigureMockMvc` → `org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc`.
+  - `EntityScan` → `org.springframework.boot.persistence.autoconfigure.EntityScan`.
+- `JpaRepository` : sans `@EnableJpaRepositories(basePackages = "com.freshlink")`, Spring Data ne scanne que le package de la classe `@SpringBootApplication` (`com.freshlink.app`) et ne trouve pas `com.freshlink.auth.domain.UserRepository`.
+- **Horloge JWT** : `Jwts.parser()` utilise le clock système par défaut ; pour tester avec `Clock.fixed(...)`, il faut l'injecter côté parser via `.clock(() -> Date.from(clock.instant()))`.
+
+**Vérifications**
+
+- `./gradlew spotlessApply build` → **BUILD SUCCESSFUL** ; 8 tests (5 nouveaux + 3 précédents) verts.
+
+**Suite prévue (étape 4)**
+
+- Module `recipe` : entité + migration + endpoints CRUD `/api/recipes`.
+
+---

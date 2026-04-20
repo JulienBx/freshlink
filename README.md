@@ -18,6 +18,8 @@ Backend API pour remplacer l’usage d’HelloFresh à la maison : recettes, imp
 | Google Java Format | 1.28.0     |
 | PostgreSQL       | 18-alpine    |
 | Testcontainers   | 2.0.4 (BOM)  |
+| google-api-client | 2.9.0       |
+| jjwt             | 0.13.0       |
 
 ## Infra locale
 
@@ -50,10 +52,28 @@ Les migrations vivent dans [src/main/resources/db/migration](src/main/resources/
 Racine de scan Spring : `com.freshlink` (voir `FreshlinkApplication`).
 
 - `com.freshlink.app` — point d’entrée et configuration applicative
-- `com.freshlink.app.config` — configuration transverse (à venir)
+- `com.freshlink.app.config` — configuration transverse (`AppConfig` : properties, JPA, clock)
 - `com.freshlink.common` — utilitaires partagés (à venir)
+- `com.freshlink.auth` — authentification : `AuthProperties`, sous-packages `domain` (User, AuthService), `security` (JWT, filtre, config), `api` (controller + DTOs)
 
 Les modules métier (`recipe`, `importer`, `grocery`, etc.) seront ajoutés sous `com.freshlink` au fil des étapes du plan.
+
+## Authentification
+
+Flow retenu : **Google Identity Services côté client → `id_token` → backend**. Le backend vérifie l'`id_token` auprès des JWKs Google, applique la whitelist d'emails, puis renvoie un **JWT applicatif HS256** (24h). Les endpoints protégés attendent `Authorization: Bearer <jwt>`.
+
+Endpoints :
+
+- `POST /api/auth/google` — corps `{"idToken": "..."}` → `{"accessToken", "expiresAt", "tokenType": "Bearer"}`
+- `GET /api/me` — protégé, renvoie `{id, email, displayName, pictureUrl}`
+
+Variables d'environnement attendues (production) :
+
+| Variable                   | Rôle                                                         |
+|----------------------------|--------------------------------------------------------------|
+| `GOOGLE_CLIENT_ID`         | `client_id` OAuth2 Google (audience attendue de l'`id_token`)|
+| `FRESHLINK_JWT_SECRET`     | Secret HMAC ≥ 32 octets pour signer le JWT applicatif        |
+| `FRESHLINK_ALLOWED_EMAILS` | Liste d'emails autorisés (séparés par virgule)               |
 
 ## Documentation
 
