@@ -9,23 +9,41 @@ Backend API pour remplacer l’usage d’HelloFresh à la maison : recettes, imp
 
 ## Versions (bootstrap)
 
-| Composant        | Version   |
-|------------------|-----------|
-| Spring Boot      | 4.0.5     |
-| Java             | 21        |
-| Gradle (wrapper) | 9.4.1     |
-| Spotless         | 8.4.0     |
-| Google Java Format | 1.28.0  |
+| Composant        | Version      |
+|------------------|--------------|
+| Spring Boot      | 4.0.5        |
+| Java             | 21           |
+| Gradle (wrapper) | 9.4.1        |
+| Spotless         | 8.4.0        |
+| Google Java Format | 1.28.0     |
+| PostgreSQL       | 18-alpine    |
+| Testcontainers   | 2.0.4 (BOM)  |
+
+## Infra locale
+
+Le fichier [compose.yaml](compose.yaml) définit un PostgreSQL 18. Spring Boot (`spring-boot-docker-compose`) démarre et arrête le conteneur automatiquement quand on lance l’application en dev.
+
+Prérequis : Docker Desktop démarré.
 
 ## Commandes utiles
 
 ```bash
-./gradlew bootRun              # lancer l’application
-./gradlew build                # tests + Spotless + jar
-./gradlew spotlessApply        # formater le code Java
+./gradlew bootRun              # lance l’app (profil `dev`) + démarre Postgres via compose
+./gradlew bootTestRun          # lance l’app contre un Postgres Testcontainers éphémère
+./gradlew build                # tests (Testcontainers) + Spotless + jar
+./gradlew spotlessApply        # formate le code Java
 ```
 
 Santé : après démarrage, `GET /actuator/health` (exposition configurée dans `application.properties`).
+
+## Profils
+
+- `dev` (défaut) : `application-dev.properties`, datasource `localhost:5432`, Docker Compose piloté par Spring Boot.
+- `test` : `src/test/resources/application-test.properties`, Docker Compose désactivé, datasource fournie par Testcontainers via `@ServiceConnection`.
+
+## Migrations Flyway
+
+Les migrations vivent dans [src/main/resources/db/migration](src/main/resources/db/migration) et tournent dans le schéma `freshlink` (créé automatiquement).
 
 ## Structure des packages
 
