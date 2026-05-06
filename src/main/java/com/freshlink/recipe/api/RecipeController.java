@@ -2,6 +2,10 @@ package com.freshlink.recipe.api;
 
 import com.freshlink.recipe.importer.HelloFreshImportResult;
 import com.freshlink.recipe.importer.HelloFreshImportService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/recipes")
+@Tag(name = "Recettes", description = "Lecture et import de recettes HelloFresh")
 public class RecipeController {
 
   private final RecipeService recipeService;
@@ -30,17 +35,39 @@ public class RecipeController {
   }
 
   @GetMapping
+  @Operation(
+      summary = "Liste paginée des recettes publiées",
+      description =
+          "Renvoie une page de résumés. Paramètres : `page` (0-based), `size` (défaut 20).")
+  @ApiResponse(responseCode = "200", description = "Page de résumés de recettes")
   public Page<RecipeResponse> list(@PageableDefault(size = 20) Pageable pageable) {
     return recipeService.list(pageable);
   }
 
   @GetMapping("/{id}")
-  public RecipeDetailResponse getById(@PathVariable UUID id) {
+  @Operation(
+      summary = "Détail d'une recette",
+      description =
+          "Renvoie l'ensemble des données d'une recette : métadonnées, allergènes,"
+              + " ingrédients, étapes, valeurs nutritionnelles et rendements.")
+  @ApiResponse(responseCode = "200", description = "Détail complet de la recette")
+  @ApiResponse(responseCode = "404", description = "Recette introuvable")
+  public RecipeDetailResponse getById(
+      @Parameter(description = "UUID de la recette") @PathVariable UUID id) {
     return recipeService.getById(id);
   }
 
   @PostMapping(value = "/import", consumes = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
+  @Operation(
+      summary = "Import d'une recette depuis HelloFresh",
+      description =
+          "Accepte un JSON HelloFresh brut. Upsert idempotent sur `external_id` :"
+              + " référentiels (allergènes, cuisines, ingrédients, ustensiles, tags) créés si absents,"
+              + " recette créée ou mise à jour. Le payload original est conservé dans `raw_source`"
+              + " (JSONB) pour audit et rejeu.")
+  @ApiResponse(responseCode = "201", description = "Import réussi — recette créée ou mise à jour")
+  @ApiResponse(responseCode = "400", description = "JSON invalide ou champ requis manquant")
   public RecipeImportResponse importFromHelloFresh(@RequestBody String rawJson) {
     HelloFreshImportResult r = helloFreshImportService.importFromJson(rawJson);
     return new RecipeImportResponse(

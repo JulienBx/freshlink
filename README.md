@@ -96,6 +96,18 @@ curl -sS -X POST http://localhost:8080/api/recipes/import \
   --data-binary @chemin/vers/recette.json
 ```
 
+## Documentation API (Swagger)
+
+Disponible quand l'application tourne :
+
+| URL | Description |
+|-----|-------------|
+| [`/swagger-ui.html`](http://localhost:8080/swagger-ui.html) | Interface graphique try-it-out |
+| [`/api-docs`](http://localhost:8080/api-docs) | Spec OpenAPI JSON |
+| [`/api-docs.yaml`](http://localhost:8080/api-docs.yaml) | Spec OpenAPI YAML |
+
+Le contrat est versionné dans [`docs/openapi.yaml`](docs/openapi.yaml) et régénéré automatiquement à chaque `./gradlew build` via `OpenApiGeneratorTest`.
+
 ## Documentation
 
 - Journal d’implémentation : [docs/devlog.md](docs/devlog.md)

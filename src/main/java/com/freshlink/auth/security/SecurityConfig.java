@@ -28,6 +28,13 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/actuator/health", "/actuator/info")
                     .permitAll()
+                    .requestMatchers(
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/api-docs",
+                        "/api-docs/**",
+                        "/api-docs.yaml")
+                    .permitAll()
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(

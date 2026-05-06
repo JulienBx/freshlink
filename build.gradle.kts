@@ -36,6 +36,8 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql")
 
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
+
   implementation("com.google.api-client:google-api-client:2.9.0")
   implementation("io.jsonwebtoken:jjwt-api:0.13.0")
   runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")

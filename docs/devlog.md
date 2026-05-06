@@ -280,3 +280,54 @@ Journal des étapes d’implémentation (référence : plan backend FreshLink).
 - Swagger / OpenAPI (`springdoc-openapi-starter-webmvc-ui`) : documenter les endpoints existants (`/api/auth/google`, `/api/auth/me`, `/api/recipes`, `/api/recipes/{id}`, `/api/recipes/import`), générer et committer `openapi.yaml` pour le contrat API et la validation CI.
 
 ---
+
+## Étape 6 — Swagger / OpenAPI (06/05/2026)
+
+**Objectif**
+
+- Documenter tous les endpoints via springdoc-openapi 3.0.3, exposer le Swagger UI, générer et versionner `docs/openapi.yaml`.
+
+**Dépendance**
+
+- `implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")` (compatible Spring Boot 4.0.5 / OpenAPI 3.1.0 / swagger-ui 5.32.2).
+
+**Configuration**
+
+- `OpenApiConfig` (`@Bean OpenAPI`) : titre, description, version, contact, licence, schéma de sécurité `bearerAuth` (HTTP Bearer JWT) appliqué globalement.
+- `application.properties` : chemin docs `springdoc.api-docs.path=/api-docs`, UI `springdoc.swagger-ui.path=/swagger-ui.html`, try-it-out activé.
+- `SecurityConfig` : routes `/swagger-ui.html`, `/swagger-ui/**`, `/api-docs`, `/api-docs/**`, `/api-docs.yaml` ajoutées en `permitAll()`.
+
+**Annotations sur les controllers**
+
+- `AuthController` : `@Tag(name = "Authentification")`, `@SecurityRequirements` (vide) sur `POST /api/auth/google` pour exclure le JWT sur cet endpoint public, `@Operation` + `@ApiResponse` sur chaque méthode.
+- `RecipeController` : `@Tag(name = "Recettes")`, `@Operation` + `@ApiResponse` + `@Parameter` sur les 3 méthodes.
+
+**Génération du contrat**
+
+- `OpenApiGeneratorTest` (test Spring Boot + MockMvc + Testcontainers) : `GET /api-docs.yaml` → écrit `docs/openapi.yaml` avec `StandardCharsets.UTF_8` (évite la corruption ISO-8859-1 de `getContentAsString()`). Lancé dans la suite de tests normale, régénère le fichier à chaque `./gradlew build`.
+- Contrat final : 650 lignes, 5 opérations documentées, schémas de réponse inférés automatiquement par springdoc depuis les types Java.
+
+**Endpoints Swagger UI**
+
+| URL | Description |
+|-----|-------------|
+| `/swagger-ui.html` | Interface graphique try-it-out |
+| `/api-docs` | Spec JSON |
+| `/api-docs.yaml` | Spec YAML (versionnée dans `docs/openapi.yaml`) |
+
+**Vérifications**
+
+- `./gradlew spotlessApply build` → **BUILD SUCCESSFUL** ; 17 tests verts (1 nouveau : `OpenApiGeneratorTest` + 16 existants).
+- `docs/openapi.yaml` : UTF-8, 650 lignes, 5 `operationId`.
+
+**Décisions / notes**
+
+- Le test `OpenApiGeneratorTest` joue un double rôle : validation (l'endpoint `/api-docs.yaml` répond 200) et génération du fichier de contrat versionné. C'est plus simple qu'un plugin Gradle spécifique (ex. `springdoc-openapi-gradle-plugin`) qui nécessiterait un profil de lancement séparé.
+- `@SecurityRequirements` (annotation vide) sur `POST /api/auth/google` retire le verrou `bearerAuth` global de cet endpoint dans la spec, ce qui reflète la réalité : pas de JWT requis pour s'authentifier.
+- La règle Cursor `.cursor/rules/git-commit.mdc` a été ajoutée pour forcer l'email `julien.burlereaux@gmail.com` sur tous les futurs commits de ce projet.
+
+**Suite prévue (étape 7)**
+
+- CI/CD : pipeline GitHub Actions (`build`, `test`, `spotlessCheck`, validation du contrat OpenAPI généré contre `docs/openapi.yaml`), puis build et push d'une image Docker sur GitHub Container Registry.
+
+---

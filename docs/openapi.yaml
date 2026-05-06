@@ -1,0 +1,650 @@
+openapi: 3.1.0
+info:
+  title: FreshLink API
+  description: "API de gestion de recettes HelloFresh — import, lecture et (à venir)\
+    \ connexion supermarchés."
+  contact:
+    name: Julien Burlereaux
+    email: julien.burlereaux@gmail.com
+  license:
+    name: Propriétaire — usage personnel
+  version: v1
+servers:
+- url: http://localhost
+  description: Generated server url
+security:
+- bearerAuth: []
+tags:
+- name: Authentification
+  description: Connexion Google et profil utilisateur
+- name: Recettes
+  description: Lecture et import de recettes HelloFresh
+paths:
+  /api/recipes/import:
+    post:
+      tags:
+      - Recettes
+      summary: Import d'une recette depuis HelloFresh
+      description: "Accepte un JSON HelloFresh brut. Upsert idempotent sur `external_id`\
+        \ : référentiels (allergènes, cuisines, ingrédients, ustensiles, tags) cré\
+        és si absents, recette créée ou mise à jour. Le payload original est conservé\
+        \ dans `raw_source` (JSONB) pour audit et rejeu."
+      operationId: importFromHelloFresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "201":
+          description: Import réussi — recette créée ou mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeImportResponse"
+        "400":
+          description: JSON invalide ou champ requis manquant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeImportResponse"
+  /api/auth/google:
+    post:
+      tags:
+      - Authentification
+      summary: Connexion via Google
+      description: "Vérifie l'`id_token` Google, crée ou met à jour le compte utilisateur,\
+        \ et renvoie un JWT applicatif (24 h)."
+      operationId: loginWithGoogle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleLoginRequest"
+        required: true
+      responses:
+        "200":
+          description: JWT applicatif
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: id_token invalide ou email non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+      security: []
+  /api/recipes:
+    get:
+      tags:
+      - Recettes
+      summary: Liste paginée des recettes publiées
+      description: "Renvoie une page de résumés. Paramètres : `page` (0-based), `size`\
+        \ (défaut 20)."
+      operationId: list
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Page de résumés de recettes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageRecipeResponse"
+  /api/recipes/{id}:
+    get:
+      tags:
+      - Recettes
+      summary: Détail d'une recette
+      description: "Renvoie l'ensemble des données d'une recette : métadonnées, allergè\
+        nes, ingrédients, étapes, valeurs nutritionnelles et rendements."
+      operationId: getById
+      parameters:
+      - name: id
+        in: path
+        description: UUID de la recette
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Détail complet de la recette
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeDetailResponse"
+        "404":
+          description: Recette introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeDetailResponse"
+  /api/me:
+    get:
+      tags:
+      - Authentification
+      summary: Profil de l'utilisateur connecté
+      operationId: me
+      responses:
+        "200":
+          description: Données de l'utilisateur courant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Token absent ou expiré
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+components:
+  schemas:
+    RecipeImportResponse:
+      type: object
+      properties:
+        recipeId:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        name:
+          type: string
+        created:
+          type: boolean
+        allergenCount:
+          type: integer
+          format: int32
+        cuisineCount:
+          type: integer
+          format: int32
+        tagCount:
+          type: integer
+          format: int32
+        ingredientCount:
+          type: integer
+          format: int32
+        utensilCount:
+          type: integer
+          format: int32
+        stepCount:
+          type: integer
+          format: int32
+        yieldCount:
+          type: integer
+          format: int32
+    GoogleLoginRequest:
+      type: object
+      properties:
+        idToken:
+          type: string
+          minLength: 1
+      required:
+      - idToken
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        tokenType:
+          type: string
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
+    PageRecipeResponse:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeResponse"
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        unpaged:
+          type: boolean
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: "#/components/schemas/SortObject"
+    RecipeLabelResponse:
+      type: object
+      properties:
+        text:
+          type: string
+        handle:
+          type: string
+        foregroundColor:
+          type: string
+        backgroundColor:
+          type: string
+        display:
+          type: boolean
+    RecipeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        headline:
+          type: string
+        difficulty:
+          type: integer
+          format: int32
+        totalTimeMinutes:
+          type: integer
+          format: int32
+        imageLink:
+          type: string
+        label:
+          $ref: "#/components/schemas/RecipeLabelResponse"
+    SortObject:
+      type: object
+      properties:
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+        empty:
+          type: boolean
+    AllergenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        slug:
+          type: string
+        iconPath:
+          type: string
+        triggersTracesOf:
+          type: boolean
+        tracesOf:
+          type: boolean
+    CuisineResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+    IngredientFamilyResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+    IngredientResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        slug:
+          type: string
+        country:
+          type: string
+        imageLink:
+          type: string
+        imagePath:
+          type: string
+        shipped:
+          type: boolean
+        family:
+          $ref: "#/components/schemas/IngredientFamilyResponse"
+        allergens:
+          type: array
+          items:
+            type: string
+        countriesOfOrigin:
+          type: array
+          items:
+            type: string
+        position:
+          type: integer
+          format: int32
+    NutritionResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        name:
+          type: string
+        amount:
+          type: number
+          format: double
+        unit:
+          type: string
+        position:
+          type: integer
+          format: int32
+    RecipeDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        externalUuid:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        headline:
+          type: string
+        description:
+          type: string
+        descriptionHtml:
+          type: string
+        descriptionMarkdown:
+          type: string
+        country:
+          type: string
+        difficulty:
+          type: integer
+          format: int32
+        prepTimeMinutes:
+          type: integer
+          format: int32
+        totalTimeMinutes:
+          type: integer
+          format: int32
+        servingSize:
+          type: integer
+          format: int32
+        averageRating:
+          type: number
+          format: double
+        ratingsCount:
+          type: integer
+          format: int32
+        favoritesCount:
+          type: integer
+          format: int32
+        imageLink:
+          type: string
+        imagePath:
+          type: string
+        videoLink:
+          type: string
+        cardLink:
+          type: string
+        websiteUrl:
+          type: string
+        canonical:
+          type: string
+        canonicalLink:
+          type: string
+        uniqueRecipeCode:
+          type: string
+        clonedFrom:
+          type: string
+        seoName:
+          type: string
+        seoDescription:
+          type: string
+        comment:
+          type: string
+        active:
+          type: boolean
+        isPublished:
+          type: boolean
+        isAddon:
+          type: boolean
+        isComplete:
+          type: boolean
+        sourceCreatedAt:
+          type: string
+          format: date-time
+        sourceUpdatedAt:
+          type: string
+          format: date-time
+        importedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        label:
+          $ref: "#/components/schemas/RecipeLabelResponse"
+        cuisines:
+          type: array
+          items:
+            $ref: "#/components/schemas/CuisineResponse"
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/TagResponse"
+        allergens:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllergenResponse"
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/IngredientResponse"
+        nutritions:
+          type: array
+          items:
+            $ref: "#/components/schemas/NutritionResponse"
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/StepResponse"
+        yields:
+          type: array
+          items:
+            $ref: "#/components/schemas/YieldResponse"
+    StepImageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        position:
+          type: integer
+          format: int32
+        link:
+          type: string
+        path:
+          type: string
+        caption:
+          type: string
+    StepResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        index:
+          type: integer
+          format: int32
+        instructions:
+          type: string
+        instructionsHtml:
+          type: string
+        instructionsMarkdown:
+          type: string
+        utensils:
+          type: array
+          items:
+            $ref: "#/components/schemas/UtensilResponse"
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/StepImageResponse"
+    TagResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        colorHandle:
+          type: string
+        displayLabel:
+          type: boolean
+        preferences:
+          type: array
+          items:
+            type: string
+    UtensilResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+    YieldIngredientResponse:
+      type: object
+      properties:
+        ingredientId:
+          type: string
+          format: uuid
+        ingredientExternalId:
+          type: string
+        ingredientName:
+          type: string
+        position:
+          type: integer
+          format: int32
+        amount:
+          type: number
+        unit:
+          type: string
+    YieldResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        yields:
+          type: integer
+          format: int32
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/YieldIngredientResponse"
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        displayName:
+          type: string
+        pictureUrl:
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: JWT applicatif obtenu via POST /api/auth/google. Valeur sans le
+        préfixe « Bearer ».
+      scheme: bearer
+      bearerFormat: JWT
