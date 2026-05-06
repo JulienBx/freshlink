@@ -56,9 +56,9 @@ Racine de scan Spring : `com.freshlink` (voir `FreshlinkApplication`).
 - `com.freshlink.common` — utilitaires partagés (à venir)
 - `com.freshlink.auth` — authentification : `AuthProperties`, sous-packages `domain` (User, AuthService), `security` (JWT, filtre, config), `api` (controller + DTOs)
 - `com.freshlink.catalog` — référentiels partagés (`Allergen`, `Cuisine`, `IngredientFamily`, `Ingredient`, `Utensil`, `Tag`) réutilisables entre recettes et (plus tard) supermarchés
-- `com.freshlink.recipe` — agrégat recette : `domain` (Recipe + sous-entités : label embarqué, allergens, ingredients, nutritions, steps, yields), `api` (controller, DTOs, mapper, exception handler)
+- `com.freshlink.recipe` — agrégat recette : `domain` (Recipe + sous-entités : label embarqué, allergens, ingredients, nutritions, steps, yields), `api` (controller, DTOs, mapper, exception handler), `importer` (ingestion HelloFresh : `HelloFreshImportService`, parsing JSON + upsert catalog/recette + écriture `raw_source`)
 
-Les modules métier restants (`importer`, `grocery`, etc.) seront ajoutés sous `com.freshlink` au fil des étapes du plan.
+Les modules métier restants (`grocery`, etc.) seront ajoutés sous `com.freshlink` au fil des étapes du plan.
 
 ## Authentification
 
@@ -85,8 +85,16 @@ Endpoints (JWT requis) :
 
 - `GET /api/recipes?page=0&size=20` — liste paginée résumée
 - `GET /api/recipes/{id}` — détail complet (toutes les relations)
+- `POST /api/recipes/import` — ingestion d'un JSON HelloFresh complet (`Content-Type: application/json`), upsert des référentiels du catalogue et de la recette (idempotent sur `external_id`), payload brut conservé dans `freshlink.recipes.raw_source` (JSONB). Réponse 201 : `{ recipeId, externalId, name, created, allergenCount, cuisineCount, tagCount, ingredientCount, utensilCount, stepCount, yieldCount }`. JSON invalide ou champ requis manquant → 400.
 
-L'endpoint d'import depuis les fichiers JSON HelloFresh arrivera à l'étape 5.
+Exemple :
+
+```bash
+curl -sS -X POST http://localhost:8080/api/recipes/import \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  --data-binary @chemin/vers/recette.json
+```
 
 ## Documentation
 

@@ -1,0 +1,564 @@
+{
+    "active": true,
+    "allergens": [
+        {
+            "id": "60368d89cdbdf450236ad8cd",
+            "name": "Blé ",
+            "type": "wheat",
+            "slug": "ble",
+            "iconPath": null,
+            "triggersTracesOf": false,
+            "tracesOf": false
+        },
+        {
+            "id": "57962a07b7e8697d4b3052f5",
+            "name": "Gluten",
+            "type": "gluten",
+            "slug": "gluten",
+            "iconLink": "https://d3hvwccx09j84u.cloudfront.net/0,0/allergens/57962a07b7e8697d4b3052f5-e20d9ca4.png",
+            "iconPath": "/allergens/57962a07b7e8697d4b3052f5-e20d9ca4.png",
+            "triggersTracesOf": false,
+            "tracesOf": false
+        },
+        {
+            "id": "57962a07b7e8697d4b3052ff",
+            "name": "Anhydride sulfureux et sulfites",
+            "type": "sulphites",
+            "slug": "anhydride-sulfureux-et-sulfites",
+            "iconLink": "https://d3hvwccx09j84u.cloudfront.net/0,0/allergens/57962a07b7e8697d4b3052ff-04104ef2.png",
+            "iconPath": "/allergens/57962a07b7e8697d4b3052ff-04104ef2.png",
+            "triggersTracesOf": false,
+            "tracesOf": false
+        },
+        {
+            "id": "57962a07b7e8697d4b3052fa",
+            "name": "Lait (contient du lactose)",
+            "type": "milk",
+            "slug": "lait-contient-du-lactose",
+            "iconLink": "https://d3hvwccx09j84u.cloudfront.net/0,0/allergens/57962a07b7e8697d4b3052fa-be127d3f.png",
+            "iconPath": "/allergens/57962a07b7e8697d4b3052fa-be127d3f.png",
+            "triggersTracesOf": false,
+            "tracesOf": false
+        },
+        {
+            "id": "5acf97b7ae08b54d88061162",
+            "name": "Lait (contient du lactose)",
+            "type": "traces-of-milk",
+            "slug": "traces-of-lait-contient-du-lactose",
+            "iconPath": null,
+            "triggersTracesOf": false,
+            "tracesOf": true
+        },
+        {
+            "id": "62038b0335f8ee1bcc1ce196",
+            "name": "Noix ",
+            "type": "traces-of-walnuts",
+            "slug": "traces-of-noix",
+            "iconPath": null,
+            "triggersTracesOf": false,
+            "tracesOf": true
+        },
+        {
+            "id": "57962a07b7e8697d4b305303",
+            "name": "Œuf",
+            "type": "traces-of-egg",
+            "slug": "traces-of-oeuf",
+            "iconPath": null,
+            "triggersTracesOf": false,
+            "tracesOf": true
+        },
+        {
+            "id": "57962a07b7e8697d4b305302",
+            "name": "Fruits à coque",
+            "type": "traces-of-nuts",
+            "slug": "traces-of-fruits-a-coque",
+            "iconLink": "https://d3hvwccx09j84u.cloudfront.net/0,0/allergens/57962a07b7e8697d4b305302-20b4388c.png",
+            "iconPath": "/allergens/57962a07b7e8697d4b305302-20b4388c.png",
+            "triggersTracesOf": false,
+            "tracesOf": true
+        },
+        {
+            "id": "5acf972fae08b54d333ac322",
+            "name": "Graines de sésame",
+            "type": "traces-of-sesame",
+            "slug": "traces-of-graines-de-sesame",
+            "iconPath": null,
+            "triggersTracesOf": false,
+            "tracesOf": true
+        },
+        {
+            "id": "57962a07b7e8697d4b3052f3",
+            "name": "Peut contenir des traces d'allergènes",
+            "type": "maycontaintracesofallergens",
+            "slug": "peut-contenir-des-traces-dallergenes",
+            "iconPath": null,
+            "triggersTracesOf": true,
+            "tracesOf": true
+        },
+        {
+            "id": "5b0532aaae08b52eb9420552",
+            "name": "Soja",
+            "type": "traces-of-soya",
+            "slug": "traces-of-soja",
+            "iconPath": null,
+            "triggersTracesOf": false,
+            "tracesOf": true
+        }
+    ],
+    "averageRating": 0,
+    "canonical": "64fb2dc232e9107c6db88827",
+    "canonicalLink": "https://www.hellofresh.fr/recipes/croque-rustique-au-poulet-saveur-truffe-64fb2dc232e9107c6db88827",
+    "cardLink": null,
+    "category": null,
+    "clonedFrom": "667e7e9eaa7c4781b1a22a3b",
+    "comment": null,
+    "country": "FR",
+    "createdAt": "2026-01-20T20:14:55+00:00",
+    "cuisines": [
+        {
+            "id": "57ebbc17b7e8697d4b3053b4",
+            "type": "fusion",
+            "name": "Fusion",
+            "slug": "fusion",
+            "iconLink": "https://d3hvwccx09j84u.cloudfront.net/0,0/cuisines/57ebbc17b7e8697d4b3053b4-38aecbd9.jpg"
+        }
+    ],
+    "description": "Ingrédient à la une dans votre Box ! Découvrez le pain de campagne tranché avec sa farine de blé tradition française. Un véritable régal pour les amateurs de pain, ce produit est composé d'ingrédients 100% origine France et ne contient aucun additif.",
+    "descriptionHTML": "<p>Ingrédient à la une dans votre Box ! Découvrez le pain de campagne tranché avec sa farine de blé tradition française. Un véritable régal pour les amateurs de pain, ce produit est composé d'ingrédients 100% origine France et ne contient aucun additif.</p>",
+    "descriptionMarkdown": "Ingrédient à la une dans votre Box ! Découvrez le pain de campagne tranché avec sa farine de blé tradition française. Un véritable régal pour les amateurs de pain, ce produit est composé d'ingrédients 100% origine France et ne contient aucun additif.",
+    "difficulty": 1,
+    "favoritesCount": 0,
+    "headline": "avec un duo de fromages mozza-gouda",
+    "id": "696fc0db384e652ce6a4b7e0",
+    "imageLink": "https://d3hvwccx09j84u.cloudfront.net/0,0/image/HF_Y25_R232_W38_FR_QFR29051-14_Main_F2_high-21afa05d.jpg",
+    "imagePath": "/image/HF_Y25_R232_W38_FR_QFR29051-14_Main_F2_high-21afa05d.jpg",
+    "ingredients": [
+        {
+            "id": "682bcc0c7fe6dd267e29b1cf",
+            "uuid": "bd544ac6-30fd-4989-b91d-1d6df6cdd33a",
+            "name": "Pain de campagne tranché",
+            "type": "sliced-country-style-bread",
+            "slug": "pain-de-campagne-tranche",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/6405bffeb9d07cd5d38d7c8f-ea29979b.png",
+            "imagePath": "/ingredient/6405bffeb9d07cd5d38d7c8f-ea29979b.png",
+            "shipped": true,
+            "allergens": [
+                "5acf97b7ae08b54d88061162",
+                "62038b0335f8ee1bcc1ce196",
+                "57962a07b7e8697d4b305303",
+                "57962a07b7e8697d4b305302",
+                "5acf972fae08b54d333ac322",
+                "57962a07b7e8697d4b3052f3",
+                "60368d89cdbdf450236ad8cd",
+                "57962a07b7e8697d4b3052f5"
+            ],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            }
+        },
+        {
+            "id": "64073e52df6297bb5beef277",
+            "uuid": "305b9d41-0250-5816-95ff-5674da71f0c3",
+            "name": "Pesto rosso",
+            "type": "red-pesto",
+            "slug": "pesto-rosso",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/64073e52df6297bb5beef277-47df6b54.png",
+            "imagePath": "/ingredient/64073e52df6297bb5beef277-47df6b54.png",
+            "shipped": true,
+            "allergens": [
+                "57962a07b7e8697d4b3052ff"
+            ],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            }
+        },
+        {
+            "id": "64f1980471b62ce12833233b",
+            "uuid": "3b863d23-22c7-5094-91a9-bfad8d85acc2",
+            "name": "Tranches de poulet cuit",
+            "type": "cooked-chicken-slices",
+            "slug": "tranches-de-poulet-cuit",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/64f1980471b62ce12833233b-410ea92b.png",
+            "imagePath": "/ingredient/64f1980471b62ce12833233b-410ea92b.png",
+            "shipped": true,
+            "allergens": [
+                "5acf97b7ae08b54d88061162",
+                "5b0532aaae08b52eb9420552",
+                "57962a07b7e8697d4b3052f3"
+            ],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            }
+        },
+        {
+            "id": "66284c862d8d8c1270527c11",
+            "uuid": "74c95f5d-3fa3-41cb-8b14-8dcf8fbe9444",
+            "name": "Mozzarella râpée",
+            "type": "mozzarella-shredded",
+            "slug": "mozzarella-rapee",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/66284c862d8d8c1270527c11-a08786ea.png",
+            "imagePath": "/ingredient/66284c862d8d8c1270527c11-a08786ea.png",
+            "shipped": true,
+            "allergens": [
+                "57962a07b7e8697d4b3052fa"
+            ],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            }
+        },
+        {
+            "id": "6405bfbfb0da194777986386",
+            "uuid": "74465e54-fa3b-5202-b7f2-b465297bb828",
+            "name": "Carotte",
+            "type": "carrot",
+            "slug": "carotte",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/6405bfbfb0da194777986386-1ee00f59.png",
+            "imagePath": "/ingredient/6405bfbfb0da194777986386-1ee00f59.png",
+            "shipped": true,
+            "allergens": [],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            },
+            "countriesOfOrigin": [
+                "UE",
+                "FR"
+            ]
+        },
+        {
+            "id": "6405bfaeaf4af6d531d50c81",
+            "uuid": "9a94a307-a64d-5b85-962a-663dff0b143e",
+            "name": "Sucrine",
+            "type": "baby-gem-lettuce",
+            "slug": "sucrine",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/6405bfaeaf4af6d531d50c81-cc8f6937.png",
+            "imagePath": "/ingredient/6405bfaeaf4af6d531d50c81-cc8f6937.png",
+            "shipped": true,
+            "allergens": [],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            },
+            "countriesOfOrigin": [
+                "UE",
+                "FR"
+            ]
+        },
+        {
+            "id": "63e5122181b4b295e66f0258",
+            "uuid": "36c20260-788a-4eed-8423-454cc7d047ac",
+            "name": "Beurre",
+            "type": "beurre-cc",
+            "slug": "beurre",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/63e5122181b4b295e66f0258-1fc1b122.png",
+            "imagePath": "/ingredient/63e5122181b4b295e66f0258-1fc1b122.png",
+            "shipped": false,
+            "allergens": [],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            }
+        },
+        {
+            "id": "63e5121c81b4b295e66f0253",
+            "uuid": "891ef56a-66ac-4a4a-8005-f825cca67a5c",
+            "name": "Vinaigre balsamique noir",
+            "type": "vinaigre-balsamique-noir-cc",
+            "slug": "vinaigre-balsamique-noir",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/63e5121c81b4b295e66f0253-457fa48d.png",
+            "imagePath": "/ingredient/63e5121c81b4b295e66f0253-457fa48d.png",
+            "shipped": false,
+            "allergens": [],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            }
+        },
+        {
+            "id": "63e5121881b4b295e66f0251",
+            "uuid": "2b075344-0190-4141-b2bb-b9bce25abcd1",
+            "name": "Huile d'olive",
+            "type": "huile-dolive-extra-vierge-cs",
+            "slug": "huile-dolive",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/63e5121881b4b295e66f0251-09f084eb.png",
+            "imagePath": "/ingredient/63e5121881b4b295e66f0251-09f084eb.png",
+            "shipped": false,
+            "allergens": [],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            }
+        },
+        {
+            "id": "63e5122b81b4b295e66f025e",
+            "uuid": "9481dcd8-7825-4a7a-8b7f-1d2171de985d",
+            "name": "Poivre et sel",
+            "type": "poivre-et-sel-au-gout",
+            "slug": "poivre-et-sel",
+            "country": "FR",
+            "imageLink": "https://d3hvwccx09j84u.cloudfront.net/200,200/ingredient/63e5122b81b4b295e66f025e-b135bada.png",
+            "imagePath": "/ingredient/63e5122b81b4b295e66f025e-b135bada.png",
+            "shipped": false,
+            "allergens": [],
+            "family": {
+                "id": "6299e0f4f7cd25bc1c024384",
+                "uuid": "9996416b-db42-55fe-b207-53e1a696a180",
+                "name": "none",
+                "slug": "none",
+                "type": "none",
+                "priority": 0,
+                "iconLink": null,
+                "iconPath": null
+            }
+        }
+    ],
+    "isAddon": false,
+    "isComplete": null,
+    "isPublished": true,
+    "label": {
+        "text": "Super Rapide",
+        "handle": "super-quick",
+        "foregroundColor": "#FFFFFF",
+        "backgroundColor": "#1A5DB6",
+        "displayLabel": true
+    },
+    "link": "https://hellofresh.com/recipes/696fc0db384e652ce6a4b7e0",
+    "name": "Croque rustique minute au poulet & pesto rosso",
+    "nutrition": [
+        {"type": "57b42a48b7e8697d4b30530d", "name": "Énergie (kJ)", "amount": 3150, "unit": "kJ"},
+        {"type": "57b42a48b7e8697d4b305304", "name": "Énergie (kcal)", "amount": 753, "unit": "kcal"},
+        {"type": "57b42a48b7e8697d4b305307", "name": "Matières grasses", "amount": 36, "unit": "g"},
+        {"type": "57b42a48b7e8697d4b305308", "name": "dont acides gras saturés", "amount": 11.7, "unit": "g"},
+        {"type": "57b42a48b7e8697d4b305305", "name": "Glucides", "amount": 67.7, "unit": "g"},
+        {"type": "57b42a48b7e8697d4b305306", "name": "dont sucres", "amount": 13.1, "unit": "g"},
+        {"type": "57b42a48b7e8697d4b305309", "name": "Protéines", "amount": 28.3, "unit": "g"},
+        {"type": "57b42a48b7e8697d4b30530b", "name": "Sel", "amount": 4.78, "unit": "g"}
+    ],
+    "prepTime": "PT15M",
+    "promotion": null,
+    "ratingsCount": 0,
+    "seoDescription": null,
+    "seoName": null,
+    "servingSize": 411,
+    "slug": "croque-rustique-minute-au-poulet-and-pesto-rosso",
+    "steps": [
+        {
+            "index": 1,
+            "instructions": "\nVeillez à bien respecter les quantités indiquées à gauche pour préparer votre recette ! \nPréchauffez le four à 230°C (210°C chaleur tournante).\nÉtalez le beurre sur une tranche de pain par personne. \nÉtalez le pesto rosso sur une autre tranche de pain par personne et garnissez-les avec les tranches de jambon de poulet et la mozzarella râpée. \n",
+            "instructionsHTML": "<ul>\n<li><span>Veillez à bien respecter les quantités indiquées à gauche pour préparer votre recette ! </span></li>\n</ul>",
+            "instructionsMarkdown": "markdown-step-1",
+            "ingredients": [],
+            "utensils": [],
+            "timers": [],
+            "images": [
+                {
+                    "link": "https://d3hvwccx09j84u.cloudfront.net/0,0/696fc0db384e652ce6a4b7e0/step-ab824600.jpg",
+                    "path": "/696fc0db384e652ce6a4b7e0/step-ab824600.jpg",
+                    "caption": "Assemblage gourmand"
+                }
+            ],
+            "videos": []
+        },
+        {
+            "index": 2,
+            "instructions": "Assemblez une tranche de pain au poulet et une tranche au beurre...",
+            "instructionsHTML": "<ul><li>Assemblez...</li></ul>",
+            "instructionsMarkdown": "markdown-step-2",
+            "ingredients": [],
+            "utensils": ["5e3ad24dfcf61c18c30ff522"],
+            "timers": [],
+            "images": [
+                {
+                    "link": "https://d3hvwccx09j84u.cloudfront.net/0,0/696fc0db384e652ce6a4b7e0/step-5fae6810.jpg",
+                    "path": "/696fc0db384e652ce6a4b7e0/step-5fae6810.jpg",
+                    "caption": "Hop, au four !"
+                }
+            ],
+            "videos": []
+        },
+        {
+            "index": 3,
+            "instructions": "Pendant ce temps, épluchez, puis râpez la carotte...",
+            "instructionsHTML": "<ul><li>Pendant ce temps...</li></ul>",
+            "instructionsMarkdown": "markdown-step-3",
+            "ingredients": [],
+            "utensils": [
+                "57e2674fb7e8697d4b30536e",
+                "57e2674fb7e8697d4b305379",
+                "57e2674fb7e8697d4b30538d"
+            ],
+            "timers": [],
+            "images": [
+                {
+                    "link": "https://d3hvwccx09j84u.cloudfront.net/0,0/696fc0db384e652ce6a4b7e0/step-a7a71d20.jpg",
+                    "path": "/696fc0db384e652ce6a4b7e0/step-a7a71d20.jpg",
+                    "caption": "Pause fraîcheur"
+                }
+            ],
+            "videos": []
+        },
+        {
+            "index": 4,
+            "instructions": "Coupez les croques en deux. Servez-en deux moitiés par personne avec la salade dans les assiettes.",
+            "instructionsHTML": "<ul><li>Coupez les croques en deux.</li></ul>",
+            "instructionsMarkdown": "markdown-step-4",
+            "ingredients": [],
+            "utensils": [],
+            "timers": [],
+            "images": [
+                {
+                    "link": "https://d3hvwccx09j84u.cloudfront.net/0,0/696fc0db384e652ce6a4b7e0/step-8688a830.jpg",
+                    "path": "/696fc0db384e652ce6a4b7e0/step-8688a830.jpg",
+                    "caption": "Service express"
+                }
+            ],
+            "videos": []
+        }
+    ],
+    "tags": [
+        {
+            "id": "62163c70143a35226e03d85e",
+            "type": "super-quick",
+            "name": "<15 min",
+            "slug": "15-min",
+            "colorHandle": "quickPrep",
+            "preferences": ["Rapido"],
+            "displayLabel": false
+        },
+        {
+            "id": "628cbb0f8c9d464d5c0837f4",
+            "type": "bestseller",
+            "name": "bestseller",
+            "slug": "bestseller",
+            "colorHandle": "familyFriendly",
+            "preferences": [],
+            "displayLabel": false
+        }
+    ],
+    "totalTime": "PT15M",
+    "uniqueRecipeCode": "QFR29051-21",
+    "updatedAt": "2026-04-03T09:56:54+00:00",
+    "utensils": [
+        {"id": "5e3ad24dfcf61c18c30ff522", "type": null, "name": "Plaque de cuisson recouverte de papier sulfurisé"},
+        {"id": "57e2674fb7e8697d4b30536e", "type": "grater", "name": "Râpe"},
+        {"id": "57e2674fb7e8697d4b305379", "type": "peeler", "name": "Éplucheur"},
+        {"id": "57e2674fb7e8697d4b30538d", "type": "saladbowl", "name": "Saladier"}
+    ],
+    "uuid": "46fdd7ee-5459-4555-a7ad-2cb975ed3826",
+    "videoLink": null,
+    "websiteUrl": "https://www.hellofresh.fr/recipes/croque-rustique-minute-au-poulet-and-pesto-rosso-696fc0db384e652ce6a4b7e0",
+    "yields": [
+        {
+            "yields": 1,
+            "ingredients": [
+                {"id": "682bcc0c7fe6dd267e29b1cf", "amount": 2, "unit": "tranche(s)"},
+                {"id": "64073e52df6297bb5beef277", "amount": 0.5, "unit": "sachet(s)"},
+                {"id": "64f1980471b62ce12833233b", "amount": 2, "unit": "tranche(s)"},
+                {"id": "66284c862d8d8c1270527c11", "amount": 0.5, "unit": "sachet(s)"},
+                {"id": "6405bfbfb0da194777986386", "amount": 0.5, "unit": "pièce(s)"},
+                {"id": "6405bfaeaf4af6d531d50c81", "amount": 0.5, "unit": "pièce(s)"},
+                {"id": "63e5122181b4b295e66f0258", "amount": 1, "unit": "cc"},
+                {"id": "63e5121c81b4b295e66f0253", "amount": 1, "unit": "cc"},
+                {"id": "63e5121881b4b295e66f0251", "amount": 1, "unit": "cs"},
+                {"id": "63e5122b81b4b295e66f025e", "amount": null, "unit": "selon le goût"}
+            ]
+        },
+        {
+            "yields": 2,
+            "ingredients": [
+                {"id": "682bcc0c7fe6dd267e29b1cf", "amount": 4, "unit": "tranche(s)"},
+                {"id": "64073e52df6297bb5beef277", "amount": 1, "unit": "sachet(s)"},
+                {"id": "64f1980471b62ce12833233b", "amount": 4, "unit": "tranche(s)"},
+                {"id": "66284c862d8d8c1270527c11", "amount": 1, "unit": "sachet(s)"},
+                {"id": "6405bfbfb0da194777986386", "amount": 1, "unit": "pièce(s)"},
+                {"id": "6405bfaeaf4af6d531d50c81", "amount": 1, "unit": "pièce(s)"},
+                {"id": "63e5122181b4b295e66f0258", "amount": 2, "unit": "cc"},
+                {"id": "63e5121c81b4b295e66f0253", "amount": 2, "unit": "cc"},
+                {"id": "63e5121881b4b295e66f0251", "amount": 2, "unit": "cs"},
+                {"id": "63e5122b81b4b295e66f025e", "amount": null, "unit": "selon le goût"}
+            ]
+        },
+        {
+            "yields": 4,
+            "ingredients": [
+                {"id": "682bcc0c7fe6dd267e29b1cf", "amount": 8, "unit": "tranche(s)"},
+                {"id": "64073e52df6297bb5beef277", "amount": 1, "unit": "sachet(s)"},
+                {"id": "64f1980471b62ce12833233b", "amount": 8, "unit": "tranche(s)"},
+                {"id": "66284c862d8d8c1270527c11", "amount": 2, "unit": "sachet(s)"},
+                {"id": "6405bfbfb0da194777986386", "amount": 2, "unit": "pièce(s)"},
+                {"id": "6405bfaeaf4af6d531d50c81", "amount": 2, "unit": "pièce(s)"},
+                {"id": "63e5122181b4b295e66f0258", "amount": 4, "unit": "cc"},
+                {"id": "63e5121c81b4b295e66f0253", "amount": 4, "unit": "cc"},
+                {"id": "63e5121881b4b295e66f0251", "amount": 4, "unit": "cs"},
+                {"id": "63e5122b81b4b295e66f025e", "amount": null, "unit": "selon le goût"}
+            ]
+        }
+    ]
+}

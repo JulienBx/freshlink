@@ -212,3 +212,71 @@ Journal des étapes d’implémentation (référence : plan backend FreshLink).
 - Import de recettes depuis fichiers JSON HelloFresh : endpoint `POST /api/recipes/import` (multipart ou body JSON) + service d'import upsert (dédup via `external_id`) + référentiels créés/mis à jour à la volée + stockage du payload brut dans `raw_source`.
 
 ---
+
+## Étape 5 — Import de recettes HelloFresh (20/04/2026)
+
+**Objectif**
+
+- Ingestion d'un JSON HelloFresh complet via une route authentifiée, avec upsert des référentiels du catalogue, upsert idempotent de la recette, et conservation du payload original dans `raw_source`.
+
+**Stratégie d'upsert**
+
+- Déduplication catalogue via `external_id` pour `allergens`, `cuisines`, `ingredient_families`, `ingredients`, `utensils`, `tags` : `findByExternalId` puis création si absent, on ne mute pas les référentiels déjà en base (comportement stable, évolutions upstream gérables plus tard).
+- Recette dédupliquée par `external_id` ; si elle existe, on la met à jour en place (metadata + `updateMetadata(...)`) et on **vide / repeuple** les collections filles (`allergens`, `cuisines`, `tags`, `ingredients`, `nutritions`, `steps`, `yields`). `orphanRemoval=true` + `flush()` entre le `clear()` et les réinsertions pour éviter les conflits de clés composites.
+- Les sous-entités (step images, yield ingredients, step utensils) sont recréées via cascade depuis les nouveaux parents.
+
+**Raw JSON**
+
+- La colonne `freshlink.recipes.raw_source JSONB` n'est pas mappée côté JPA (on évite le mapping `@JdbcTypeCode(SqlTypes.JSON)` + synchro Hibernate) ; on écrit via une **native query** dédiée sur le repository : `UPDATE freshlink.recipes SET raw_source = CAST(:raw AS jsonb) WHERE id = :id`. Hibernate `ddl-auto=validate` reste satisfait (colonne présente en DB, absente de l'entité → pas d'erreur).
+
+**Module**
+
+- Nouveau sous-package `com.freshlink.recipe.importer` (orchestration spécifique HelloFresh, indépendant de l'API et du domaine pour pouvoir accueillir d'autres sources plus tard).
+- Classes :
+  - `HelloFreshImportService` (`@Service`, `@Transactional`) : entrée unique `importFromJson(String rawJson)`, parsing Jackson 3 (`tools.jackson.databind.JsonNode`), upsert catalogue, upsert recette, réassociation complète, écriture `raw_source`.
+  - `HelloFreshImportResult` (record) : id généré, `externalId`, `name`, `created` (bool), + compteurs (`allergenCount`, `cuisineCount`, `tagCount`, `ingredientCount`, `utensilCount`, `stepCount`, `yieldCount`).
+  - `HelloFreshImportException` : runtime, mappée en HTTP 400 par `RecipeExceptionHandler`.
+
+**Parsing robuste**
+
+- Helpers statiques `asText / asInt / asDouble / asBigDecimal / asBool / asBooleanObject` traitent `null`, `missing`, mauvais type ; `requireText` impose la présence d'un champ critique (`id`, `name`, `slug`, …) sinon `HelloFreshImportException`.
+- Durées ISO 8601 (`PT15M`) → `Duration.parse(...).toMinutes()`.
+- Timestamps ISO (`2026-01-20T20:14:55+00:00`) → `OffsetDateTime.parse(...).toInstant()`.
+- Dedup positionnelle (via `HashSet`) pour éviter les doublons d'ingrédients / allergènes / nutriments / yields si le JSON en propose.
+
+**API**
+
+- `POST /api/recipes/import` (`consumes=application/json`) → 201 `RecipeImportResponse` en cas de succès.
+  - Body : JSON HelloFresh brut (schéma tel que fourni par leur API / par les fichiers téléchargés).
+  - Auth : JWT applicatif requis (utilise la même chaîne Spring Security, pas d'accès anonyme).
+  - Erreurs : JSON malformé ou champ requis manquant → 400 avec `{"error": "..."}` (via `RecipeExceptionHandler`).
+- `RecipeImportResponse` : miroir exact de `HelloFreshImportResult` (on garde les DTOs API dans `com.freshlink.recipe.api` et on n'expose pas directement la classe du sous-module importer).
+
+**Fixture & tests**
+
+- `src/test/resources/fixtures/hellofresh-croque-rustique.json` : JSON complet (recette « Croque rustique minute au poulet & pesto rosso ») repris tel quel du cas d'usage fourni — 11 allergènes, 1 cuisine, 2 tags, 10 ingrédients, 4 ustensiles, 4 steps avec images, 3 yields (1/2/4 personnes), 8 nutriments.
+- `HelloFreshImportIntegrationTest` (`@SpringBootTest` + MockMvc + Testcontainers) :
+  - `import_firstTime_createsFullGraph()` : POST → 201, `created=true`, compteurs exacts (11 / 1 / 2 / 10 / 4 / 4 / 3), vérification DB (label, pres/total time = 15, servingSize = 411, `uniqueRecipeCode`, collections, sous-collections par step et par yield), vérification `raw_source` JSONB relu via `EntityManager` + parsé avec `ObjectMapper.readTree` pour confirmer `id`, `slug` et `ingredients.size() == 10`.
+  - `import_secondTime_isIdempotent()` : deux POST consécutifs du même payload → `created=false` au second, exactement 1 recette, 11 allergènes, 1 cuisine, 10 ingrédients, 4 ustensiles, 2 tags en base (pas de duplication), collections filles (11/10/4/3/8) inchangées.
+  - `import_withInvalidJson_returns400()` : payload sans champ `id` → 400 + message `Missing required field: ...`.
+  - `import_withoutToken_returns401()` : appel non authentifié → 401 (HttpStatusEntryPoint).
+
+**Vérifications**
+
+- `./gradlew spotlessApply build` → **BUILD SUCCESSFUL** ; 16 tests verts (4 nouveaux + 12 existants).
+- Warning `deprecation` sur `JsonNode.decimalValue()` (Jackson 3) : à rebrancher sur l'API successeur quand l'upgrade sera nécessaire, sans impact fonctionnel pour l'instant.
+
+**Décisions / notes**
+
+- Stratégie **create-if-missing** sur les référentiels catalog : simplicité, stabilité en cas d'ajout d'une nouvelle langue ou d'un nouvel identifiant HelloFresh. Pas de drift silencieux des labels existants. L'update-in-place sera ajoutée si/quand HelloFresh introduit des renommages ou reslug (couvert via `raw_source` de toute façon).
+- L'upsert recette privilégie **la clarté et l'idempotence** (clear + flush + re-add) à la diff minimale : on réécrit les lignes enfants mais sur un volume faible (< ~50 lignes par recette) et on évite toute logique de merging complexe.
+- `POST /api/recipes/import` accepte **un seul objet JSON** par appel ; l'import massif (dossier entier, archive zip, ou endpoint `/bulk`) sera ajouté une fois les besoins réels observés.
+- `raw_source` stocke la version **telle que reçue** : utile pour débugger les évolutions de schéma HelloFresh, pour relancer un ré-import sans repasser par le client, et pour auditer ce que nous avons importé exactement.
+- Pas d'`@Transactional` sur le contrôleur : toute l'orchestration est encapsulée dans `HelloFreshImportService.importFromJson` (propagation `REQUIRED`).
+- `Context7 MCP` : `resolve-library-id` OK (Jackson 2 présent, pas de doc Jackson 3 `tools.jackson.*` remontée) — vérifications croisées avec les classes déjà utilisées dans le projet (`AuthIntegrationTest`) qui consomment bien `tools.jackson.databind.*`.
+
+**Suite prévue (étape 6)**
+
+- Swagger / OpenAPI (`springdoc-openapi-starter-webmvc-ui`) : documenter les endpoints existants (`/api/auth/google`, `/api/auth/me`, `/api/recipes`, `/api/recipes/{id}`, `/api/recipes/import`), générer et committer `openapi.yaml` pour le contrat API et la validation CI.
+
+---
